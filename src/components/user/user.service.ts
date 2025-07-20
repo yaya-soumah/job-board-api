@@ -31,6 +31,7 @@ export class UserService {
     const [count, [updated]] = await UserRepository.updateUserProfile(id, data)
     if (count === 0 || !updated) throw new AppError('User not found', 404)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...response } = updated.toJSON()
     return response
   }
@@ -68,6 +69,7 @@ export class UserService {
     const [count, [updated]] = await UserRepository.updateUserProfile(userId, { avatar: avatarUrl })
     if (count === 0 || !updated) throw new AppError('User not found', 404)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...response } = updated.toJSON()
     return response
   }

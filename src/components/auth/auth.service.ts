@@ -34,6 +34,7 @@ export class AuthService {
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user.toJSON()
 
     return { accessToken, refreshToken, user: safeUser }
@@ -55,6 +56,7 @@ export class AuthService {
     const accessToken = signAccessToken(payload)
     const refreshToken = signRefreshToken(payload)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user.toJSON()
 
     return { accessToken, refreshToken, user: safeUser }
@@ -73,7 +75,7 @@ export class AuthService {
         recruiterProfileId: decode.recruiterProfileId,
       })
       return { newToken }
-    } catch (err) {
+    } catch {
       throw new AppError('Invalid refresh token', 400)
     }
   }

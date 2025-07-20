@@ -20,7 +20,7 @@ async function startServer() {
     app.listen(PORT, () => {
       logger.info(`Server listening on http://localhost:${PORT}/api/v1/`)
     })
-  } catch (err) {
+  } catch {
     logger.error('Failed to start')
   }
 }

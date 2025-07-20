@@ -15,7 +15,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const decoded = verifyAccessToken(token as string)
     ;(req as any).user = decoded
     next()
-  } catch (err) {
+  } catch {
     error(res, 403, 'Invalid or expired token.')
   }
 }
