@@ -1,0 +1,445 @@
+openapi: 3.0.3
+info:
+  title: Job Board API
+  description: RESTful API for a Job Board platform. Users can apply to jobs, recruiters can manage job posts, and admins can oversee users, recruiters, and jobs.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://job-board-api-wxmn.onrender.com/api/v1
+    description: Production server
+
+tags:
+  - name: Auth
+    description: User authentication and token management
+  - name: Users
+    description: Public and authenticated user profile operations
+  - name: Recruiter
+    description: Recruiter management
+  - name: JobPost
+    description: Create, update, delete, reply and fetch job posts
+  - name: JobApplication
+    description: Jobs application management
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, recruiter, admin]
+        avatar:
+          type: string
+        bio:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    RecruiterProfile:
+      type: object
+      properties:
+        id:
+          type: number
+        userId:
+          type: number
+        bio:
+          type: string
+        company:
+          type: string
+    JobPost:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        type:
+          type: string
+        recruiterId:
+          type: number
+        salary:
+          type: number
+        createdAt:
+          type: string
+    JobApplication:
+      type: object
+      properties:
+        id:
+          type: number
+        userId:
+          type: number
+        jobId:
+          type: number
+        coverLetter:
+          type: string
+        status:
+          type: string
+          enum: [pending, shortlisted, rejected]
+        createdAt:
+          type: string
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [admin, recruiter]
+          required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, username]
+              properties:
+                username:
+                  type: string
+                  example: test
+                email:
+                  type: string
+                  example: test@example.com
+                password:
+                  type: string
+                  example: password123
+
+      responses:
+        '201':
+          description: User registered successfully
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: admin2@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token using refresh token from cookie
+      parameters:
+        - in: cookie
+          name: refreshToken
+          required: true
+          schema:
+            type: string
+          description: Refresh token stored in HTTP-only cookie
+      responses:
+        '200':
+          description: New access token returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        '401':
+          description: Invalid or missing refresh token
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of users
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+    patch:
+      tags: [Users]
+      summary: Update profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile updated
+  /users/me/password:
+    patch:
+      tags: [Users]
+      summary: Change password
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Password changed
+  /users/me/avatar:
+    patch:
+      tags: [Users]
+      summary: Upload avatar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar uploaded
+  /users/{id}:
+    delete:
+      tags: [Users]
+      summary: Delete a user (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: User deleted
+
+  /recruiters/all:
+    get:
+      tags: [Recruiter]
+      summary: Admin gets all recruiters
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of recruiters
+  /recruiters/{id}:
+    delete:
+      tags: [Recruiter]
+      summary: Admin deletes a recruiter profile
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Recruiter deleted
+  /recruiters:
+    get:
+      tags: [Recruiter]
+      summary: Get own recruiter profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Recruiter profile
+    patch:
+      tags: [Recruiter]
+      summary: Update own recruiter profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile updated
+
+  /job-posts:
+    get:
+      tags: [JobPost]
+      summary: Admin gets all job posts
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of jobs
+    post:
+      tags: [JobPost]
+      summary: Recruiter creates a job post
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: true
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                location:
+                  type: string
+                type:
+                  type: string
+                  enum: [full-time, part-time, contract]
+                salary:
+                  type: number
+                  required: false
+      responses:
+        '201':
+          description: Job created
+  /job-posts/{id}:
+    get:
+      tags: [JobPost]
+      summary: Recruiter views own job post
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job details
+    patch:
+      tags: [JobPost]
+      summary: Update job post
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Job updated
+    delete:
+      tags: [JobPost]
+      summary: Admin deletes job post
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Job deleted
+  /applications:
+    get:
+      tags: [JobApplication]
+      summary: User gets own applications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of applications
+  /applications/recruiter:
+    get:
+      tags: [JobApplication]
+      summary: Recruiter gets applications for own jobs
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Applications list
+  /applications/admin:
+    get:
+      tags: [JobApplication]
+      summary: Admin gets all applications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Applications list
+  /applications/{applicationId}/status:
+    patch:
+      tags: [JobApplication]
+      summary: Recruiter updates application status
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: true
+              properties:
+                status:
+                  type: string
+                  enum: [shortlisted, rejected]
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status updated
+  /applications/{applicationId}:
+    delete:
+      tags: [JobApplication]
+      summary: User withdraws an application
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Application deleted
+  /applications/{jobId}:
+    post:
+      tags: [JobApplication]
+      summary: User applies to a job
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                coverLetter:
+                  type: string
+      responses:
+        '201':
+          description: Application submitted

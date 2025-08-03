@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: job-board-api
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run migrate && npm start
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRES_IN
+        sync: false
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        sync: false
+      - key: NODE_ENV
+        sync: false
+      # Add any other environment variables you use
+
+  - type: worker
+    name: notification-worker
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run migrate && npm run start:worker
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRES_IN
+        sync: false
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        sync: false
+      - key: NODE_ENV
+        sync: false
+      # Add any other environment variables required by your worker
